@@ -17,7 +17,7 @@ extern crate core_text;
 extern crate objc;
 
 pub use self::format::{FontFaceId, FontId};
-use {Color, Font, Format, Image};
+use {Color, Font, Format, Image, ParagraphTrait, ParagraphCursorTrait};
 
 use TypographicBounds;
 
@@ -54,9 +54,9 @@ pub struct Paragraph {
 
 unsafe impl Sync for Paragraph {}
 
-impl Paragraph {
+impl ParagraphTrait for Paragraph {
     #[inline]
-    pub fn new(style: ParagraphStyle) -> Paragraph {
+    fn new(style: ParagraphStyle) -> Paragraph {
         let attributed_string = CFAttributedString::new(CFString::from(""), CFDictionary::new());
         let mutable_attributed_string =
             CFMutableAttributedString::from_attributed_string(attributed_string);
@@ -66,7 +66,7 @@ impl Paragraph {
         }
     }
 
-    pub fn from_string(string: &str, style: ParagraphStyle) -> Paragraph {
+    fn from_string(string: &str, style: ParagraphStyle) -> Paragraph {
         let attributed_string = CFAttributedString::new(CFString::from(string),
                                                         CFDictionary::new());
         let mutable_attributed_string =
@@ -78,7 +78,7 @@ impl Paragraph {
     }
 
     #[inline]
-    pub fn copy_string_in_range(&self, buffer: &mut String, range: Range<usize>) {
+    fn copy_string_in_range(&self, buffer: &mut String, range: Range<usize>) {
         buffer.extend(self.attributed_string
                           .lock()
                           .unwrap()
@@ -90,12 +90,12 @@ impl Paragraph {
     }
 
     #[inline]
-    pub fn char_len(&self) -> usize {
+    fn char_len(&self) -> usize {
         self.attributed_string.lock().unwrap().string().char_len() as usize
     }
 
     #[inline]
-    pub fn edit_at(&mut self, position: usize) -> ParagraphCursor {
+    fn edit_at(&mut self, position: usize) -> ParagraphCursor {
         let attributes = self.attributed_string
                              .lock()
                              .unwrap()
@@ -110,7 +110,7 @@ impl Paragraph {
         }
     }
 
-    pub fn word_range_at_char_index(&self, index: usize) -> Range<usize> {
+    fn word_range_at_char_index(&self, index: usize) -> Range<usize> {
         let attributed_string = self.attributed_string.lock().unwrap();
         let string = attributed_string.string();
         let range = CFRange::init(0, string.char_len());
@@ -128,14 +128,14 @@ pub struct ParagraphCursor<'a> {
     format_stack: Vec<Format>,
 }
 
-impl<'a> ParagraphCursor<'a> {
-    pub fn commit(self) {
+impl<'a> ParagraphCursorTrait for ParagraphCursor<'a> {
+    fn commit(self) {
         let range = CFRange::init(self.position as CFIndex, 0);
         let buffer = self.buffer.as_attributed_string();
         self.attributed_string.replace_attributed_string(range, buffer)
     }
 
-    pub fn push_string(&mut self, string: &str) {
+    fn push_string(&mut self, string: &str) {
         let mut attributes = CFMutableDictionary::new();
         for format in &self.format_stack {
             format.add_to_native_attributes(&mut attributes);
@@ -146,15 +146,15 @@ impl<'a> ParagraphCursor<'a> {
         self.buffer.replace_attributed_string(range, attributed_string)
     }
 
-    pub fn push_format(&mut self, format: Format) {
+    fn push_format(&mut self, format: Format) {
         self.format_stack.push(format)
     }
 
-    pub fn pop_format(&mut self) {
+    fn pop_format(&mut self) {
         self.format_stack.pop().expect("ParagraphCursor::pop_format(): Format stack empty!");
     }
 
-    pub fn format_stack(&self) -> &[Format] {
+    fn format_stack(&self) -> &[Format] {
         &self.format_stack
     }
 }

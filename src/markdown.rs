@@ -12,8 +12,8 @@ use indexmap::IndexMap;
 use indexmap::map::Entry;
 use pulldown_cmark::{Event, Parser, Tag};
 
-use {Font, Format, Image};
-use {Document, Paragraph, ParagraphContent, ParagraphStyle};
+use {Font, FontTrait, Format, Image};
+use {Document, Paragraph, ParagraphContent, ParagraphCursorTrait, ParagraphStyle, ParagraphTrait};
 
 pub struct MarkdownParser {
     paragraph_styles: [ParagraphStyle; 5],

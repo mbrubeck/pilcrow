@@ -1,61 +1,62 @@
 #![allow(unused)]
 
+use {FontTrait, ParagraphTrait, ParagraphCursorTrait};
 use std::ops::Range;
 
 pub struct Paragraph;
 
 use {Format, ParagraphStyle};
 
-impl Paragraph {
+impl ParagraphTrait for Paragraph {
     #[inline]
-    pub fn new(style: ParagraphStyle) -> Paragraph {
+    fn new(style: ParagraphStyle) -> Paragraph {
         unimplemented!()
     }
 
-    pub fn from_string(string: &str, style: ParagraphStyle) -> Paragraph {
-        unimplemented!()
-    }
-
-    #[inline]
-    pub fn copy_string_in_range(&self, buffer: &mut String, range: Range<usize>) {
+    fn from_string(string: &str, style: ParagraphStyle) -> Paragraph {
         unimplemented!()
     }
 
     #[inline]
-    pub fn char_len(&self) -> usize {
+    fn copy_string_in_range(&self, buffer: &mut String, range: Range<usize>) {
         unimplemented!()
     }
 
     #[inline]
-    pub fn edit_at(&mut self, position: usize) -> ParagraphCursor {
+    fn char_len(&self) -> usize {
         unimplemented!()
     }
 
-    pub fn word_range_at_char_index(&self, index: usize) -> Range<usize> {
+    #[inline]
+    fn edit_at(&mut self, position: usize) -> ParagraphCursor {
+        unimplemented!()
+    }
+
+    fn word_range_at_char_index(&self, index: usize) -> Range<usize> {
         unimplemented!()
     }
 }
 
 pub struct ParagraphCursor<'a>(&'a ());
 
-impl<'a> ParagraphCursor<'a> {
-    pub fn commit(self) {
+impl<'a> ParagraphCursorTrait for ParagraphCursor<'a> {
+    fn commit(self) {
         unimplemented!()
     }
 
-    pub fn push_string(&mut self, string: &str) {
+    fn push_string(&mut self, string: &str) {
         unimplemented!()
     }
 
-    pub fn push_format(&mut self, format: Format) {
+    fn push_format(&mut self, format: Format) {
         unimplemented!()
     }
 
-    pub fn pop_format(&mut self) {
+    fn pop_format(&mut self) {
         unimplemented!()
     }
 
-    pub fn format_stack(&self) -> &[Format] {
+    fn format_stack(&self) -> &[Format] {
         unimplemented!()
     }
 }
@@ -63,49 +64,52 @@ impl<'a> ParagraphCursor<'a> {
 #[derive(Clone)]
 pub struct Font;
 
-impl Font {
-    #[inline]
-    pub fn from_native_font(native_font: NativeFont) -> Font {
-        unimplemented!()
-    }
-
-    pub fn default_serif() -> Font {
-        unimplemented!()
-    }
-
-    pub fn default_monospace() -> Font {
-        unimplemented!()
-    }
+impl FontTrait for Font {
+    type FontId = FontId;
+    type FontFaceId = FontFaceId;
 
     #[inline]
-    pub fn id(&self) -> FontId {
+    fn from_native_font(native_font: NativeFont) -> Font {
+        unimplemented!()
+    }
+
+    fn default_serif() -> Font {
+        unimplemented!()
+    }
+
+    fn default_monospace() -> Font {
         unimplemented!()
     }
 
     #[inline]
-    pub fn face_id(&self) -> FontFaceId {
+    fn id(&self) -> FontId {
         unimplemented!()
     }
 
     #[inline]
-    pub fn size(&self) -> f32 {
+    fn face_id(&self) -> FontFaceId {
         unimplemented!()
     }
 
     #[inline]
-    pub fn native_font(&self) -> NativeFont {
+    fn size(&self) -> f32 {
         unimplemented!()
     }
 
-    pub fn to_size(&self, new_size: f32) -> Font {
+    #[inline]
+    fn native_font(&self) -> NativeFont {
         unimplemented!()
     }
 
-    pub fn to_bold(&self) -> Option<Font> {
+    fn to_size(&self, new_size: f32) -> Font {
         unimplemented!()
     }
 
-    pub fn to_italic(&self) -> Option<Font> {
+    fn to_bold(&self) -> Option<Font> {
+        unimplemented!()
+    }
+
+    fn to_italic(&self) -> Option<Font> {
         unimplemented!()
     }
 }

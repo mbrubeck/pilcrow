@@ -285,6 +285,40 @@ impl Default for DocumentStyle {
     }
 }
 
+trait ParagraphTrait {
+    #[inline]
+    fn new(style: ParagraphStyle) -> Self;
+    fn from_string(string: &str, style: ParagraphStyle) -> Self;
+    fn copy_string_in_range(&self, buffer: &mut String, range: Range<usize>);
+    fn char_len(&self) -> usize;
+    fn edit_at(&mut self, position: usize) -> ParagraphCursor;
+    fn word_range_at_char_index(&self, index: usize) -> Range<usize>;
+}
+
+trait ParagraphCursorTrait {
+    fn commit(self);
+    fn push_string(&mut self, string: &str);
+    fn push_format(&mut self, format: Format);
+    fn pop_format(&mut self);
+    fn format_stack(&self) -> &[Format];
+}
+
+trait FontTrait {
+    type FontId;
+    type FontFaceId;
+
+    fn from_native_font(native_font: NativeFont) -> Font;
+    fn default_serif() -> Font;
+    fn default_monospace() -> Font;
+    fn id(&self) -> Self::FontId;
+    fn face_id(&self) -> Self::FontFaceId;
+    fn size(&self) -> f32;
+    fn native_font(&self) -> NativeFont;
+    fn to_size(&self, new_size: f32) -> Font;
+    fn to_bold(&self) -> Option<Font>;
+    fn to_italic(&self) -> Option<Font>;
+}
+
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 #[repr(C)]
 pub struct TextLocation {

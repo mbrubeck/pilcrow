@@ -44,7 +44,7 @@ use std::f32;
 use std::f64;
 
 
-use {LAYOUT_CALLBACKS, LayoutCallbacks};
+use {FontTrait, LAYOUT_CALLBACKS, LayoutCallbacks};
 
 static IMAGE_ATTACHMENT_CLASSES_REGISTER: Once = sync::ONCE_INIT;
 
@@ -123,53 +123,56 @@ pub struct Font {
     native_font: NativeFont,
 }
 
-impl Font {
+impl FontTrait for Font {
+    type FontId = FontId;
+    type FontFaceId = FontFaceId;
+
     #[inline]
-    pub fn from_native_font(native_font: NativeFont) -> Font {
+    fn from_native_font(native_font: NativeFont) -> Font {
         Font {
             native_font
         }
     }
 
-    pub fn default_serif() -> Font {
+    fn default_serif() -> Font {
         Font::from_native_font(ct_font::new_from_name("Times", 16.0).unwrap())
     }
 
-    pub fn default_monospace() -> Font {
+    fn default_monospace() -> Font {
         Font::from_native_font(ct_font::new_from_name("Menlo", 12.0).unwrap())
     }
 
     #[inline]
-    pub fn id(&self) -> FontId {
+    fn id(&self) -> FontId {
         FontId::from_native_font(self.native_font.clone())
     }
 
     #[inline]
-    pub fn face_id(&self) -> FontFaceId {
+    fn face_id(&self) -> FontFaceId {
         FontFaceId::from_native_font(self.native_font.clone())
     }
 
     #[inline]
-    pub fn size(&self) -> f32 {
+    fn size(&self) -> f32 {
         self.native_font.pt_size() as f32
     }
 
     #[inline]
-    pub fn native_font(&self) -> NativeFont {
+    fn native_font(&self) -> NativeFont {
         self.native_font.clone()
     }
 
-    pub fn to_size(&self, new_size: f32) -> Font {
+    fn to_size(&self, new_size: f32) -> Font {
         Font::from_native_font(self.native_font.clone_with_font_size(new_size as f64))
     }
 
-    pub fn to_bold(&self) -> Option<Font> {
+    fn to_bold(&self) -> Option<Font> {
         self.native_font
             .clone_with_symbolic_traits(kCTFontBoldTrait, kCTFontBoldTrait)
             .map(Font::from_native_font)
     }
 
-    pub fn to_italic(&self) -> Option<Font> {
+    fn to_italic(&self) -> Option<Font> {
         self.native_font
             .clone_with_symbolic_traits(kCTFontItalicTrait, kCTFontItalicTrait)
             .map(Font::from_native_font)
