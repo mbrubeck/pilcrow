@@ -15,7 +15,7 @@ use std::ptr;
 use std::slice;
 use std::str;
 
-use {Font, NativeFont};
+use {Font, FontTrait, NativeFont};
 use markdown::{BlockSelector, InlineSelector, MarkdownParser, ParseResults};
 use {Document, DocumentStyle, Paragraph, ParagraphStyle, TextLocation};
 

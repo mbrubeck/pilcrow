@@ -7,7 +7,7 @@ extern crate rayon;
 #[macro_use]
 extern crate lazy_static;
 
-// XXX pub mod ffi;
+pub mod ffi;
 pub mod markdown;
 
 #[cfg(any(target_os = "macos", target_os="ios"))]
