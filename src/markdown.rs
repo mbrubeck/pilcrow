@@ -8,13 +8,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core_graphics::base::CGFloat;
 use indexmap::IndexMap;
 use indexmap::map::Entry;
 use pulldown_cmark::{Event, Parser, Tag};
 
-use format::{Color, Font, Format, Image};
-use {Document, DocumentStyle, Paragraph, ParagraphContent, ParagraphStyle};
+use {Font, Format, Image};
+use {Document, Paragraph, ParagraphContent, ParagraphStyle};
 
 pub struct MarkdownParser {
     paragraph_styles: [ParagraphStyle; 5],

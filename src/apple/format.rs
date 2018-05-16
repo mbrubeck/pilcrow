@@ -8,34 +8,36 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use cocoa::base::id;
-use cocoa::foundation::NSUInteger;
-use core_foundation::base::{CFType, TCFType};
-use core_foundation::dictionary::{CFDictionary, CFDictionaryRef, CFMutableDictionary};
-use core_foundation::number::{CFNumber, CFNumberRef};
-use core_foundation::string::{CFString, CFStringRef};
-use core_foundation::url::CFURL;
-use core_graphics::base::CGFloat;
-use core_graphics::font::CGFont;
-use core_graphics::geometry::{CGPoint, CGRect, CGSize};
-use core_text::font as ct_font;
-use core_text::font::{CTFont, CTFontRef};
-use core_text::font_descriptor::{kCTFontBoldTrait, kCTFontItalicTrait};
-use core_text::run::{CTRunDelegate, ICTRunDelegate};
+use super::{
+    cocoa::base::id,
+    cocoa::foundation::NSUInteger,
+    core_foundation::base::{CFType, TCFType},
+    core_foundation::dictionary::{CFDictionary, CFDictionaryRef, CFMutableDictionary},
+    core_foundation::number::{CFNumber, CFNumberRef},
+    core_foundation::string::{CFString, CFStringRef},
+    core_foundation::url::CFURL,
+    core_graphics::base::CGFloat,
+    core_graphics::font::CGFont,
+    core_graphics::geometry::{CGPoint, CGRect, CGSize},
+    core_text::font as ct_font,
+    core_text::font::{CTFont, CTFontRef},
+    core_text::font_descriptor::{kCTFontBoldTrait, kCTFontItalicTrait},
+    core_text::run::{CTRunDelegate, ICTRunDelegate},
+    objc::declare::ClassDecl,
+    objc::runtime::{Class, Object, Sel},
+};
 use euclid::{Point2D, Size2D};
-use objc::declare::ClassDecl;
-use objc::runtime::{Class, Object, Sel};
 use std::collections::HashMap;
 use std::mem;
 use std::os::raw::c_void;
 use std::ptr;
 use std::str::FromStr;
-use std::sync::{self, Once, RwLock};
+use std::sync::{self, Once};
 
 #[cfg(target_os = "macos")]
-use cocoa::appkit::{NSColor, NSImage};
+use apple::cocoa::appkit::{NSColor, NSImage};
 #[cfg(target_os = "ios")]
-use cocoa::uikit::UIColor;
+use apple::cocoa::uikit::UIColor;
 #[cfg(target_word_size = "32")]
 use std::f32;
 #[cfg(target_word_size = "64")]
@@ -48,68 +50,7 @@ static IMAGE_ATTACHMENT_CLASSES_REGISTER: Once = sync::ONCE_INIT;
 
 type NativeAttributeDictionary = CFMutableDictionary<CFString, CFType>;
 
-pub enum Format {
-    Font(Font),
-    Color(Color),
-    Link(u32, String),
-    Image(u32),
-}
-
 impl Format {
-    #[inline]
-    pub fn from_font(font: Font) -> Format {
-        Format::Font(font)
-    }
-
-    #[inline]
-    pub fn from_color(color: Color) -> Format {
-        Format::Color(color)
-    }
-
-    #[inline]
-    pub fn from_link(link_id: u32, url: String) -> Format {
-        Format::Link(link_id, url)
-    }
-
-    #[inline]
-    pub fn from_image(image_id: u32) -> Format {
-        Format::Image(image_id)
-    }
-
-    pub fn font(&self) -> Option<Font> {
-        if let Format::Font(ref font) = *self {
-            Some((*font).clone())
-        } else {
-            None
-        }
-    }
-
-    pub fn color(&self) -> Option<Color> {
-        if let Format::Color(ref color) = *self {
-            Some((*color).clone())
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    pub fn link(&self) -> Option<(u32, &str)> {
-        if let Format::Link(link_id, ref url) = *self {
-            Some((link_id, &**url))
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    pub fn image(&self) -> Option<u32> {
-        if let Format::Image(image_id) = *self {
-            Some(image_id)
-        } else {
-            None
-        }
-    }
-
     pub(crate) fn add_to_native_attributes(&self, dictionary: &mut NativeAttributeDictionary) {
         unsafe {
             match *self {
@@ -175,14 +116,16 @@ impl Format {
     }
 }
 
+pub type NativeFont = CTFont;
+
 #[derive(Clone)]
 pub struct Font {
-    native_font: CTFont,
+    native_font: NativeFont,
 }
 
 impl Font {
     #[inline]
-    pub fn from_native_font(native_font: CTFont) -> Font {
+    pub fn from_native_font(native_font: NativeFont) -> Font {
         Font {
             native_font
         }
@@ -212,7 +155,7 @@ impl Font {
     }
 
     #[inline]
-    pub fn native_font(&self) -> CTFont {
+    pub fn native_font(&self) -> NativeFont {
         self.native_font.clone()
     }
 
@@ -237,7 +180,7 @@ impl Font {
 pub struct FontFaceId(usize);
 
 impl FontFaceId {
-    fn from_native_font(font: CTFont) -> FontFaceId {
+    fn from_native_font(font: NativeFont) -> FontFaceId {
         unsafe {
             FontFaceId(mem::transmute::<CGFont, usize>(font.copy_to_CGFont()))
         }
@@ -248,32 +191,14 @@ impl FontFaceId {
 pub struct FontId(usize);
 
 impl FontId {
-    fn from_native_font(font: CTFont) -> FontId {
+    fn from_native_font(font: NativeFont) -> FontId {
         unsafe {
             FontId(mem::transmute::<CTFont, usize>(font))
         }
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub struct Color {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
-}
-
 impl Color {
-    #[inline]
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Color {
-        Color {
-            r,
-            g,
-            b,
-            a,
-        }
-    }
-
     pub fn from_native_color(color: id) -> Color {
         let (mut r, mut g, mut b, mut a) = (0.0, 0.0, 0.0, 0.0);
         unsafe {
@@ -286,32 +211,6 @@ impl Color {
             a: round_CGFloat(a * 255.0) as u8,
         }
     }
-
-    #[inline]
-    pub fn r_f32(&self) -> f32 {
-        (self.r as f32) / 255.0
-    }
-
-    #[inline]
-    pub fn g_f32(&self) -> f32 {
-        (self.g as f32) / 255.0
-    }
-
-    #[inline]
-    pub fn b_f32(&self) -> f32 {
-        (self.b as f32) / 255.0
-    }
-
-    #[inline]
-    pub fn a_f32(&self) -> f32 {
-        (self.a as f32) / 255.0
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct Image {
-    pub id: u32,
-    pub alt_text: String,
 }
 
 #[derive(Clone, PartialEq, Debug)]

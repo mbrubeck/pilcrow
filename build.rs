@@ -14,6 +14,7 @@ use cbindgen::{Builder, Config};
 use std::env;
 
 fn main() {
+    /* XXX
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let config = Config::from_file("cbindgen.toml").expect("Failed to read `cbindgen.toml`!");
     Builder::new().with_crate(crate_dir)
@@ -21,4 +22,5 @@ fn main() {
                   .generate()
                   .expect("Unable to generate bindings!")
                   .write_to_file("pilcrow.h");
+    */
 }

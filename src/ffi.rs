@@ -8,7 +8,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core_text::font::CTFont;
 use euclid::SideOffsets2D;
 use libc::c_uchar;
 use std::cmp;
@@ -16,11 +15,9 @@ use std::ptr;
 use std::slice;
 use std::str;
 
-use format::Font;
+use {Font, NativeFont};
 use markdown::{BlockSelector, InlineSelector, MarkdownParser, ParseResults};
 use {Document, DocumentStyle, Paragraph, ParagraphStyle, TextLocation};
-
-pub type NativeFont = CTFont;
 
 #[no_mangle]
 pub unsafe extern "C" fn pilcrow_document_new() -> *mut Document {
